@@ -78,8 +78,15 @@ class SSE extends EventEmitter {
     };
 
     this.on('data', dataListener);
-
     this.on('serialize', serializeListener);
+
+    // Send final message and close the connection
+    this.once('close', () => {
+      this.removeListener('data', dataListener);
+      this.removeListener('serialize', serializeListener);
+      this.setMaxListeners(this.getMaxListeners() - 2);
+      res.end();
+    });
 
     if (this.initial) {
       if (this.options.isSerialized) {
@@ -132,6 +139,10 @@ class SSE extends EventEmitter {
     } else {
       this.send(data);
     }
+  }
+
+  close() {
+    this.emit('close');
   }
 }
 
